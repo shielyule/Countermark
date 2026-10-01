@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Countermark — PRD</title>
+  <style>
+    :root { --bg:#0f1419; --surface:#1a2332; --text:#e7ecf3; --muted:#8b9cb3; --accent:#3d9cf5; --green:#3ecf8e; --amber:#f5b83d; --border:#2a3544; }
+    body { font-family: system-ui,sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; margin: 0; padding: 2rem 1.25rem 4rem; max-width: 56rem; margin-inline: auto; }
+    h1 { font-size: 1.75rem; margin: 0 0 0.25rem; }
+    .sub { color: var(--muted); margin-bottom: 1.5rem; }
+    h2 { font-size: 1.05rem; color: var(--accent); margin: 2rem 0 0.75rem; }
+    details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin: 0.5rem 0; }
+    summary { cursor: pointer; padding: 0.85rem 1.1rem; font-weight: 600; }
+    .inner { padding: 0 1.1rem 1rem; color: var(--muted); font-size: 0.92rem; }
+    .step { display: flex; gap: 0.75rem; align-items: flex-start; margin: 0.5rem 0; }
+    .num { background: var(--accent); color: #fff; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0; }
+    footer { margin-top: 2.5rem; font-size: 0.85rem; color: var(--muted); }
+    a { color: var(--accent); }
+    code { font-size: 0.85em; color: var(--text); }
+  </style>
+</head>
+<body>
+  <h1>Countermark — PRD</h1>
+  <p class="sub">Draft · companion to <a href="prd.md">prd.md</a> · Path A single-page POC</p>
+
+  <h2>Journey (incl. handoff & retry)</h2>
+  <svg viewBox="0 0 720 200" width="100%" role="img" aria-label="Flow with handoff branch and retry loop">
+    <defs>
+      <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8b9cb3"/></marker>
+      <marker id="arrA" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5b83d"/></marker>
+    </defs>
+    <!-- Main row -->
+    <rect x="4" y="50" width="72" height="36" rx="6" fill="#1a2332" stroke="#3d9cf5"/>
+    <text x="40" y="72" text-anchor="middle" fill="#e7ecf3" font-size="10">Intake</text>
+    <rect x="88" y="50" width="72" height="36" rx="6" fill="#1a2332" stroke="#3d9cf5"/>
+    <text x="124" y="72" text-anchor="middle" fill="#e7ecf3" font-size="10">Analyze</text>
+    <rect x="172" y="50" width="80" height="36" rx="6" fill="#1a2332" stroke="#3d9cf5"/>
+    <text x="212" y="72" text-anchor="middle" fill="#e7ecf3" font-size="10">Expand ↓</text>
+    <rect x="264" y="50" width="88" height="36" rx="6" fill="#1a2332" stroke="#3ecf8e"/>
+    <text x="308" y="72" text-anchor="middle" fill="#e7ecf3" font-size="10">Review</text>
+    <!-- Handoff fork -->
+    <rect x="364" y="28" width="88" height="32" rx="6" fill="#1a2332" stroke="#3ecf8e"/>
+    <text x="408" y="48" text-anchor="middle" fill="#e7ecf3" font-size="9">mailto</text>
+    <rect x="364" y="76" width="88" height="32" rx="6" fill="#1a2332" stroke="#3ecf8e"/>
+    <text x="408" y="96" text-anchor="middle" fill="#e7ecf3" font-size="9">Copy</text>
+    <text x="408" y="118" text-anchor="middle" fill="#8b9cb3" font-size="8">dual handoff</text>
+    <!-- Retry loop -->
+    <rect x="88" y="140" width="100" height="32" rx="6" fill="#1a2332" stroke="#f5b83d"/>
+    <text x="138" y="160" text-anchor="middle" fill="#f5b83d" font-size="9">Fail → Retry</text>
+    <path d="M76 68 L76 156 L88 156" fill="none" stroke="#f5b83d" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrA)"/>
+    <path d="M188 156 L124 86" fill="none" stroke="#f5b83d" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrA)"/>
+    <text x="200" y="175" fill="#8b9cb3" font-size="8">input preserved</text>
+    <!-- Edit input -->
+    <rect x="264" y="140" width="100" height="32" rx="6" fill="#1a2332" stroke="#3d9cf5"/>
+    <text x="314" y="160" text-anchor="middle" fill="#e7ecf3" font-size="9">Edit input ↑</text>
+    <path d="M308 86 L314 140" fill="none" stroke="#3d9cf5" stroke-width="1" marker-end="url(#arr)"/>
+    <path d="M314 140 L40 140 L40 86" fill="none" stroke="#3d9cf5" stroke-width="1" marker-end="url(#arr)"/>
+    <!-- Main arrows -->
+    <path d="M76 68 H88 M160 68 H172 M252 68 H264 M352 68 L380 44 M352 68 L380 92" fill="none" stroke="#8b9cb3" stroke-width="2" marker-end="url(#arr)"/>
+  </svg>
+  <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem;">
+    <code>mailto:${to}?subject=…</code> or <code>mailto:?subject=…</code> when To empty · both encoded
+  </p>
+
+  <h2>Step through</h2>
+  <details open>
+    <summary>Intake & guard</summary>
+    <div class="inner">
+      <div class="step"><span class="num">1</span><span>Paste and/or PNG·JPG·PDF ≤10MB. Sample link for demo.</span></div>
+      <div class="step"><span class="num">2</span><span>Empty → inline error, no API.</span></div>
+    </div>
+  </details>
+  <details>
+    <summary>Loading & success</summary>
+    <div class="inner">
+      <p>Dim intake, spinner, three status phrases. Collapse intake bar; results scroll into view. <strong>Edit input</strong> re-expands intake; draft stays until re-analyze overwrites.</p>
+    </div>
+  </details>
+  <details>
+    <summary>Review card</summary>
+    <div class="inner">
+      <p>Diagnosis → To (green/amber/blank) → subject → draft ≤180w → mailto <em>and</em> Copy + disclaimer.</p>
+    </div>
+  </details>
+  <details>
+    <summary>Failures</summary>
+    <div class="inner">
+      <p>Bad file · unreadable (amber) · API error + <strong>Retry</strong> (dashed loop to Analyze). Never wipe input.</p>
+    </div>
+  </details>
+  <details>
+    <summary>Explicitly out (Path A)</summary>
+    <div class="inner">
+      <p>Tracker, templates, archive, sidebar CRM, SMTP send, council/employment.</p>
+    </div>
+  </details>
+
+  <footer>Approve in chat · then <code>run 4-spec</code></footer>
+</body>
+</html>
