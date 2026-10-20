@@ -202,13 +202,13 @@ export function CountermarkApp() {
   ] as const;
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-8 sm:max-w-xl sm:py-10">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:max-w-5xl lg:px-8">
       <AppHeader />
       <FlowProgress phase={flowPhase} />
 
       {intakeCollapsed && !intakeExpanded && (
-        <div className="mb-4 flex items-center justify-between rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm shadow-sm">
-          <span className="truncate text-zinc-700">{summarySnippet}</span>
+        <div className="mb-4 flex items-center justify-between rounded-2xl border border-[var(--cm-border)] bg-[var(--cm-card)] px-4 py-3 text-sm shadow-sm">
+          <span className="truncate text-[var(--cm-primary)]">{summarySnippet}</span>
           <button
             type="button"
             className={`ml-3 shrink-0 ${btnTextLinkSm}`}
@@ -283,10 +283,10 @@ export function CountermarkApp() {
           <div
             className={`mt-6 rounded-2xl border-2 border-dashed p-5 transition-colors ${
               fileError
-                ? "border-red-300 bg-red-50/80"
+                ? "border-[var(--cm-accent)] bg-[color-mix(in_srgb,var(--cm-accent)_12%,white)]"
                 : dragActive
-                  ? "border-[var(--cm-primary)] bg-zinc-100"
-                  : "border-zinc-300 bg-zinc-50/50"
+                  ? "border-[var(--cm-primary)] bg-[color-mix(in_srgb,var(--cm-sage)_18%,white)]"
+                  : "border-[var(--cm-sage)] bg-[color-mix(in_srgb,var(--cm-sage)_10%,white)]"
             }`}
             onDragEnter={(e) => {
               e.preventDefault();

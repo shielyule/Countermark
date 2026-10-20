@@ -28,15 +28,15 @@ function stepState(
 
 const pillClass: Record<ReturnType<typeof stepState>, string> = {
   idle:
-    "border border-zinc-200 bg-white text-[var(--cm-neutral)] shadow-sm",
+    "border border-[var(--cm-border)] bg-[var(--cm-card)] text-[var(--cm-neutral)] shadow-sm",
   done:
-    "border border-emerald-200 bg-emerald-50 text-emerald-800",
+    "border border-[var(--cm-sage)] bg-[color-mix(in_srgb,var(--cm-sage)_20%,white)] text-[var(--cm-primary)]",
   "active-red":
-    "border border-red-300 bg-red-50 text-red-800 animate-cm-pulse-red shadow-sm",
+    "border border-[var(--cm-accent)] bg-[color-mix(in_srgb,var(--cm-accent)_18%,white)] text-[var(--cm-primary)] animate-cm-pulse-red shadow-sm",
   "active-amber":
-    "border border-amber-400 bg-amber-50 text-amber-900 shadow-sm animate-pulse",
+    "border border-[var(--cm-accent)] bg-[color-mix(in_srgb,var(--cm-accent)_22%,white)] text-[var(--cm-primary)] shadow-sm animate-pulse",
   "active-green":
-    "border border-emerald-400 bg-emerald-100 text-emerald-900 shadow-sm",
+    "border border-[var(--cm-primary)] bg-[color-mix(in_srgb,var(--cm-sage)_28%,white)] text-[var(--cm-primary)] shadow-sm",
 };
 
 export function FlowProgress({ phase }: Props) {
@@ -50,12 +50,12 @@ export function FlowProgress({ phase }: Props) {
           : "Intake";
 
   return (
-    <div className="mb-6 rounded-2xl border border-zinc-200/80 bg-zinc-100/80 px-4 py-3">
-      <p className="font-mono text-[10px] font-medium uppercase tracking-widest text-zinc-500">
+    <div className="mb-6 rounded-2xl border border-[var(--cm-border)] bg-[color-mix(in_srgb,var(--cm-sage)_14%,white)] px-4 py-3">
+      <p className="font-mono text-[10px] font-medium uppercase tracking-widest text-[var(--cm-sage)]">
         Progress
       </p>
-      <p className="mt-0.5 text-xs text-zinc-600">
-        Viewing: <span className="font-medium text-zinc-800">{viewing}</span>
+      <p className="mt-0.5 text-xs text-[var(--cm-neutral)]">
+        Viewing: <span className="font-medium text-[var(--cm-primary)]">{viewing}</span>
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {STEPS.map((step) => {

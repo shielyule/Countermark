@@ -1,5 +1,5 @@
 /** Browsers often ignore mailto links longer than ~2k characters. */
-export const MAILTO_SAFE_LENGTH = 2000;
+export const MAILTO_SAFE_LENGTH = 1800;
 
 function encodeMailtoRecipient(to: string): string {
   const trimmed = to.trim();
@@ -23,12 +23,34 @@ export function buildMailto(params: {
   return `mailto:?subject=${subject}&body=${body}`;
 }
 
-/** Opens the system mail client via a synthetic click (more reliable than a long static href). */
-export function openMailDraft(mailtoUrl: string): void {
-  const link = document.createElement("a");
-  link.href = mailtoUrl;
-  link.rel = "noopener noreferrer";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+/**
+ * Best-effort open of the system mail client.
+ * Many browsers (and Cursor's preview) block or ignore mailto — callers should
+ * always copy the draft and show UI feedback.
+ */
+export function openMailDraft(mailtoUrl: string): boolean {
+  try {
+    // Prefer a real navigation gesture target for desktop handlers.
+    const link = document.createElement("a");
+    link.href = mailtoUrl;
+    link.target = "_self";
+    link.rel = "noopener noreferrer";
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    // Fallback: location assign (some browsers only honour this path).
+    window.setTimeout(() => {
+      try {
+        window.location.href = mailtoUrl;
+      } catch {
+        /* ignore */
+      }
+    }, 50);
+
+    return true;
+  } catch {
+    return false;
+  }
 }

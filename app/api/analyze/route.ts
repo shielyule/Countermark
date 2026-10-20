@@ -8,8 +8,7 @@ import {
   DISPUTE_SYSTEM_PROMPT,
   buildUserContent,
 } from "@/lib/prompts/dispute";
-import { normalizeDisputeCategory } from "@/lib/consumerResources";
-import type { AnalysisResult } from "@/lib/types";
+import { mapAnalysisResponse } from "@/lib/mapAnalysis";
 import { bufferFromBase64, resolveMimeType } from "@/lib/fileKind";
 import { extractPdfText } from "@/lib/pdf";
 
@@ -29,24 +28,6 @@ const bodySchema = z.object({
     })
     .optional(),
 });
-
-function mapResponse(json: Record<string, unknown>): AnalysisResult {
-  return {
-    merchant: String(json.merchant ?? ""),
-    amount: String(json.amount ?? ""),
-    breachSummary: String(json.breachSummary ?? ""),
-    toEmail: String(json.toEmail ?? ""),
-    toConfidence:
-      json.toConfidence === "high" || json.toConfidence === "inferred"
-        ? json.toConfidence
-        : "none",
-    contactUrl: json.contactUrl ? String(json.contactUrl) : undefined,
-    subject: String(json.subject ?? ""),
-    body: String(json.body ?? ""),
-    parseError: Boolean(json.parseError),
-    disputeCategory: normalizeDisputeCategory(json.disputeCategory),
-  };
-}
 
 function parseModelJson(raw: string): Record<string, unknown> {
   const trimmed = raw.trim();
@@ -197,7 +178,7 @@ export async function POST(req: Request) {
         });
 
     const json = parseModelJson(raw);
-    return NextResponse.json(mapResponse(json));
+    return NextResponse.json(mapAnalysisResponse(json));
   } catch (e) {
     console.error(e);
     const msg = e instanceof Error ? e.message : "";

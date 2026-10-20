@@ -41,7 +41,7 @@ export function ToField({ toEmail, toConfidence, contactUrl, onChange }: Props) 
           href={contactUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-sky-700 underline"
+          className="text-sm font-medium text-[var(--cm-accent)] underline"
         >
           Merchant contact / help page
         </a>

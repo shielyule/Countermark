@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Countermark",
   description:
     "Paste an unfair bill or charge. Get a ready-to-send dispute email.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({
