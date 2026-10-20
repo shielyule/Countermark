@@ -19,5 +19,6 @@ Please confirm cancellation, reverse this charge within 5 business days, and rep
 Regards,
 [Your name]`,
     parseError: false,
+    disputeCategory: "subscription",
   };
 }

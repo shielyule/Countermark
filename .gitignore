@@ -37,6 +37,12 @@ yarn-error.log*
 # Personal learning context
 /devpost/learner-profile.md
 
+# Secrets / credential dumps (never commit)
+Countermark openAI API key.pdf
+*API key*.pdf
+*api-key*.pdf
+*secret*.pdf
+
 # vercel
 .vercel
 
