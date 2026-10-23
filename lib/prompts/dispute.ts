@@ -3,43 +3,33 @@ Return ONLY valid JSON with this shape:
 {
   "merchant": string,
   "amount": string,
-  "breachSummary": string (plain English, not legal advice),
+  "breachSummary": string (plain English, not legal advice, 1–2 sentences),
   "toEmail": string (empty string if unknown),
   "toConfidence": "high" | "inferred" | "none",
   "contactUrl": string (optional, empty if none),
   "subject": string,
-  "body": string (same as toneBodies.assertive — keep for compatibility),
-  "toneBodies": {
-    "polite": string,
-    "assertive": string,
-    "regulatory": string
-  },
+  "body": string (100–140 words max, 3 short paragraphs: issue → leverage → requested action/deadline; include [ATTACHED: …] lines when useful),
   "evidenceChecklist": [
     {
       "id": string,
       "label": string,
       "found": boolean,
-      "detail": string (optional — e.g. extracted value),
-      "attachmentPlaceholder": string (optional — e.g. "[ATTACHED: Screenshot of cancellation confirmation dated 12 Sep 2025]"),
-      "advice": string (optional — tip when found is false)
+      "detail": string (optional),
+      "attachmentPlaceholder": string (optional),
+      "advice": string (optional — when found is false)
     }
   ],
   "parseError": boolean (true if input is not a bill/charge/cancellation notice),
   "disputeCategory": "energy" | "telecoms" | "subscription" | "council" | "banking" | "water" | "retail" | "other"
 }
-Rules:
-- disputeCategory: best match for where the consumer would seek help (energy supplier bill → energy; mobile/broadband → telecoms; SaaS/app/subscription renewal → subscription; council tax or local authority charge → council; bank/card → banking; water bill → water; physical goods/shop → retail; unclear → other). POC focuses on UK-relevant routing.
-- toConfidence "high" only if an email appears explicitly on the document for complaints/billing/support.
-- "inferred" for plausible complaints@domain or support@domain from sender domain when no explicit address.
-- "none" when no reasonable email; leave toEmail empty.
-- Do NOT invent named statutes, section numbers, or case law. Use plain consumer fairness language only.
-- Each toneBodies entry: 120–180 words, 3 short paragraphs (issue → leverage → requested action/deadline). Include useful [ATTACHED: …] placeholders when evidence is missing but relevant.
-  - polite: assume possible administrative oversight; courteous; ask for clarification and correction.
-  - assertive: firm consumer pushback; cite contradiction with cancellation/terms/facts the user stated; demand reversal with a clear deadline.
-  - regulatory: warn that if unresolved within 14 days the user will escalate to the relevant ombudsman/dispute scheme for that sector (name the scheme type in plain words, e.g. "energy ombudsman" or "communications ombudsman") — still NOT legal advice and do not invent Act names.
-- body MUST equal toneBodies.assertive.
-- evidenceChecklist: 3–6 items covering account/reference numbers, amounts, dates, proof of cancellation, prior contact, payment proof, etc. Set found=true when clearly present in the notice or the user's dispute statement; found=false when the consumer should attach or supply it. Always include advice + attachmentPlaceholder for missing items that strengthen the dispute.
-- When the user provides "Your dispute (user's words)", treat it as their authoritative position. Reflect it in breachSummary and all toneBodies. Prefer dates and facts they state there over inference; do not contradict them.`;
+Rules (keep the response compact — speed matters):
+- disputeCategory: best match (energy; telecoms/broadband; SaaS/subscription; council; banking; water; retail; else other).
+- toEmail is the COMPANY dispute inbox, never the consumer on the To: line (ignore customer@example.com / you@…). "high" if billing/complaints/support appears on the notice; "inferred" as billing@ from a noreply@ sender domain; "none" only if no merchant domain. Never put noreply@ or example.com addresses in toEmail.
+- contactUrl: prefer a real https help/contact URL from the notice; if the notice invents a fake host, omit contactUrl rather than inventing one.
+- Do NOT invent named statutes or Act titles. Plain consumer fairness language only.
+- body: assertive consumer tone only (one draft). Under 140 words.
+- evidenceChecklist: 3–5 items max. found=true when in notice or user statement; for missing items include advice + attachmentPlaceholder.
+- When "Your dispute (user's words)" is present, treat it as authoritative in breachSummary and body.`;
 
 export function buildUserContent(params: {
   text: string;

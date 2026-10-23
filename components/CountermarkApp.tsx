@@ -28,6 +28,7 @@ export function CountermarkApp() {
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [intakeError, setIntakeError] = useState<string | null>(null);
+  const [disputeGuideOpen, setDisputeGuideOpen] = useState(false);
   const [pills, setPills] = useState<ContextPills>({});
   const [loading, setLoading] = useState(false);
   const [extracting, setExtracting] = useState(false);
@@ -38,8 +39,16 @@ export function CountermarkApp() {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const disputeSectionRef = useRef<HTMLDivElement>(null);
 
   const hasInput = text.trim().length > 0 || file !== null;
+
+  const pillOptions = [
+    ["cancelled", "I already asked to cancel"],
+    ["amountMismatch", "Amount is different than agreed"],
+    ["noReply", "Sent from no-reply"],
+    ["hiddenAutoRenewal", "Hidden auto-renewal"],
+  ] as const;
 
   const flowPhase: FlowPhase = useMemo(() => {
     if (analysis) return "complete";
@@ -48,8 +57,23 @@ export function CountermarkApp() {
     return "intake";
   }, [analysis, extracting, loading]);
 
-  const togglePill = (key: keyof ContextPills) => {
-    setPills((p) => ({ ...p, [key]: !p[key] }));
+  const appendPillPhrase = (label: string) => {
+    setUserStatement((prev) => {
+      const trimmed = prev.trim();
+      if (trimmed.includes(label)) return prev;
+      return trimmed ? `${trimmed} ${label}.` : `${label}.`;
+    });
+  };
+
+  const togglePill = (key: keyof ContextPills, label: string) => {
+    setPills((p) => {
+      const nextOn = !p[key];
+      if (nextOn) {
+        appendPillPhrase(label);
+        setDisputeGuideOpen(false);
+      }
+      return { ...p, [key]: nextOn };
+    });
   };
 
   const resetAll = () => {
@@ -58,6 +82,7 @@ export function CountermarkApp() {
     setFile(null);
     setFileError(null);
     setIntakeError(null);
+    setDisputeGuideOpen(false);
     setPills({});
     setApiError(null);
     setAnalysis(null);
@@ -125,16 +150,23 @@ export function CountermarkApp() {
   const analyze = useCallback(async () => {
     setIntakeError(null);
     setApiError(null);
+    setDisputeGuideOpen(false);
     if (!hasInput) {
       setIntakeError(
         "Please upload an image/document or paste the message text to continue.",
       );
       return;
     }
+    if (!userStatement.trim()) {
+      setDisputeGuideOpen(true);
+      setIntakeError(null);
+      disputeSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
 
     setLoading(true);
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 90_000);
+    const timeout = window.setTimeout(() => controller.abort(), 50_000);
     try {
       let fileBase64: string | undefined;
       let mimeType: string | undefined;
@@ -178,7 +210,7 @@ export function CountermarkApp() {
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         setApiError(
-          "Analysis timed out after 90 seconds. Tap Retry — Gemini is often busy; a second try usually works.",
+          "Analysis timed out. Tap Retry — or for a fast demo recording set MOCK_ANALYSIS=1 in .env.local and restart the dev server.",
         );
       } else {
         setApiError(
@@ -193,13 +225,6 @@ export function CountermarkApp() {
 
   const summarySnippet =
     file?.name ?? (text.trim().slice(0, 80) + (text.length > 80 ? "…" : ""));
-
-  const pillOptions = [
-    ["cancelled", "I already asked to cancel"],
-    ["amountMismatch", "Amount is different than agreed"],
-    ["noReply", "Sent from no-reply"],
-    ["hiddenAutoRenewal", "Hidden auto-renewal"],
-  ] as const;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:max-w-5xl lg:px-8">
@@ -250,18 +275,46 @@ export function CountermarkApp() {
             </button>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6" ref={disputeSectionRef}>
             <label className={fieldLabel}>Your dispute (in your words)</label>
             <p className="mt-1 text-xs leading-relaxed text-[var(--cm-neutral)]">
               Why you reject this charge — dates, cancellation, amounts. This is woven into your email draft.
             </p>
+            {disputeGuideOpen ? (
+              <div
+                className="mt-3 rounded-2xl border border-[var(--cm-accent)] bg-[color-mix(in_srgb,var(--cm-accent)_12%,white)] p-4 text-[var(--cm-primary)] shadow-sm"
+                role="dialog"
+                aria-labelledby="dispute-guide-title"
+              >
+                <p id="dispute-guide-title" className="text-sm font-semibold">
+                  Add your dispute reason before analyzing
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-[var(--cm-neutral)]">
+                  Type why you reject this charge in the box below, or tap one of the suggested points to drop a starter phrase in.
+                </p>
+                <button
+                  type="button"
+                  className={`mt-3 text-sm ${btnTextLinkSm}`}
+                  onClick={() => setDisputeGuideOpen(false)}
+                >
+                  Got it
+                </button>
+              </div>
+            ) : null}
             <textarea
               value={userStatement}
-              onChange={(e) => setUserStatement(e.target.value)}
+              onChange={(e) => {
+                setUserStatement(e.target.value);
+                if (e.target.value.trim()) setDisputeGuideOpen(false);
+              }}
               rows={4}
               disabled={loading || extracting}
               placeholder="e.g. I will not pay this. I already cancelled on 12 Sep 2025 by email and have confirmation ref #12345."
-              className={fieldBox}
+              className={`${fieldBox} ${
+                disputeGuideOpen
+                  ? "border-[var(--cm-accent)] ring-2 ring-[color-mix(in_srgb,var(--cm-accent)_30%,transparent)]"
+                  : ""
+              }`}
             />
             <p className="mt-4 font-mono text-[10px] font-medium uppercase tracking-widest text-zinc-500">
               Suggested points to add
@@ -271,7 +324,7 @@ export function CountermarkApp() {
                 <button
                   key={key}
                   type="button"
-                  onClick={() => togglePill(key)}
+                  onClick={() => togglePill(key, label)}
                   className={btnPill(Boolean(pills[key]))}
                 >
                   {label}

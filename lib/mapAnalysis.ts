@@ -1,4 +1,5 @@
 import { normalizeDisputeCategory } from "@/lib/consumerResources";
+import { synthesizeToneBodies } from "@/lib/toneBodies";
 import type {
   AnalysisResult,
   DisputeTone,
@@ -56,11 +57,8 @@ function mapToneBodies(
 
 export function mapAnalysisResponse(json: Record<string, unknown>): AnalysisResult {
   const body = String(json.body ?? "");
-  const toneBodies = mapToneBodies(json.toneBodies, body);
   const tone: DisputeTone = "assertive";
-  const active = toneBodies?.assertive || body;
-
-  return {
+  const base: AnalysisResult = {
     merchant: String(json.merchant ?? ""),
     amount: String(json.amount ?? ""),
     breachSummary: String(json.breachSummary ?? ""),
@@ -68,11 +66,26 @@ export function mapAnalysisResponse(json: Record<string, unknown>): AnalysisResu
     toConfidence: asConfidence(json.toConfidence),
     contactUrl: json.contactUrl ? String(json.contactUrl) : undefined,
     subject: String(json.subject ?? ""),
-    body: active,
+    body,
     parseError: Boolean(json.parseError),
     disputeCategory: normalizeDisputeCategory(json.disputeCategory),
     tone,
-    toneBodies,
     evidenceChecklist: mapEvidence(json.evidenceChecklist),
+  };
+
+  // Prefer local synthesis (fast path). Use model toneBodies only if all three present.
+  const fromModel = mapToneBodies(json.toneBodies, body);
+  const modelComplete =
+    fromModel &&
+    fromModel.polite !== fromModel.assertive &&
+    fromModel.regulatory !== fromModel.assertive;
+  const toneBodies: ToneBodies = modelComplete
+    ? fromModel
+    : synthesizeToneBodies(base);
+
+  return {
+    ...base,
+    body: toneBodies.assertive || body,
+    toneBodies,
   };
 }

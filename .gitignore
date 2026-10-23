@@ -43,6 +43,11 @@ Countermark openAI API key.pdf
 *api-key*.pdf
 *secret*.pdf
 
+# Local demo recordings (host on YouTube, not GitHub)
+*.mp4
+*.mov
+*.webm
+
 # vercel
 .vercel
 

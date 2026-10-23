@@ -8,6 +8,8 @@ import {
   DISPUTE_SYSTEM_PROMPT,
   buildUserContent,
 } from "@/lib/prompts/dispute";
+import { enrichContactFields } from "@/lib/inferContact";
+import { heuristicAnalysis } from "@/lib/heuristicAnalysis";
 import { mapAnalysisResponse } from "@/lib/mapAnalysis";
 import { bufferFromBase64, resolveMimeType } from "@/lib/fileKind";
 import { extractPdfText } from "@/lib/pdf";
@@ -145,7 +147,9 @@ export async function POST(req: Request) {
     }
 
     if (process.env.MOCK_ANALYSIS === "1") {
-      return NextResponse.json(mockGhostRenewalAnalysis());
+      return NextResponse.json(
+        enrichContactFields(mockGhostRenewalAnalysis(), documentText),
+      );
     }
 
     const useGemini = Boolean(getGeminiApiKey());
@@ -161,24 +165,44 @@ export async function POST(req: Request) {
       );
     }
 
-    const raw = useGemini
-      ? await analyzeWithGemini({
-          documentText,
-          userStatement,
-          fileBase64,
-          mimeType,
-          contextPills,
-        })
-      : await analyzeWithOpenAI({
-          documentText,
-          userStatement,
-          fileBase64,
-          mimeType,
-          contextPills,
-        });
+    try {
+      const raw = useGemini
+        ? await analyzeWithGemini({
+            documentText,
+            userStatement,
+            fileBase64,
+            mimeType,
+            contextPills,
+          })
+        : await analyzeWithOpenAI({
+            documentText,
+            userStatement,
+            fileBase64,
+            mimeType,
+            contextPills,
+          });
 
-    const json = parseModelJson(raw);
-    return NextResponse.json(mapAnalysisResponse(json));
+      const json = parseModelJson(raw);
+      const mapped = mapAnalysisResponse(json);
+      return NextResponse.json(enrichContactFields(mapped, documentText));
+    } catch (modelErr) {
+      const msg = modelErr instanceof Error ? modelErr.message : "";
+      // Keep the demo moving when Gemini is capacity-limited or timing out.
+      if (
+        documentText &&
+        (msg.includes("GEMINI_CAPACITY") ||
+          msg.includes("GEMINI_TIMEOUT") ||
+          msg.includes("503") ||
+          msg.includes("429") ||
+          msg.includes("high demand"))
+      ) {
+        console.warn("[analyze] Gemini unavailable — using fast local fallback");
+        return NextResponse.json(
+          heuristicAnalysis({ documentText, userStatement, contextPills }),
+        );
+      }
+      throw modelErr;
+    }
   } catch (e) {
     console.error(e);
     const msg = e instanceof Error ? e.message : "";

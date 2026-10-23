@@ -6,7 +6,7 @@ const PHRASES = [
   "Extracting merchant & billing details…",
   "Identifying what went wrong…",
   "Drafting escalation response…",
-  "Still working — Gemini can take up to a minute…",
+  "Still working — Gemini can take 15–40s when busy…",
 ];
 
 type Props = { active: boolean };
